@@ -1,0 +1,54 @@
+version: '3.9'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - 3000:3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    links:
+      - backend
+    #environment:
+      #GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Must specify GOOGLE_CLIENT_ID in .env file or environment.}
+      #GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?Must specify GOOGLE_CLIENT_SECRET in .env file or environment.}
+      #GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Must specify GITHUB_CLIENT_ID in .env file or environment.}
+      #GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Must specify GITHUB_CLIENT_SECRET in .env file or environment.}
+      #NEXTAUTH_URL: http://localhost:3000
+      #JWT_SECRET: ${JWT_SECRET:?Must specify JWT_SECRET in .env file or environment.}
+
+  backend:
+    build: ./backend
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database
+    ports:
+      - 3001:3001
+    environment:
+      DATABASE_URL: postgres://postgres:password@database/postgres
+      # The value of DEV doesn't matter, only that it's defined.
+      DEV: 'yes'
+      # Values from .env file.
+      #ADMIN_KEY: ${ADMIN_KEY:?Must specify ADMIN_KEY in .env file or environment.}
+
+  database:
+    image: postgres:13.8-alpine
+    restart: always
+    ports:
+      - 5001:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+
+volumes:
+  pgdata:
