@@ -5,7 +5,7 @@ import Link from "next/link";
 export const Logo = () => {
   return (
     <Link href='/'>
-      <Image src={require("../../assets/logo.svg").default} alt="Logo" />
+      <Image src={require("../../public/logo.svg").default} alt="Logo" />
     </Link>
   );
 };

@@ -11,6 +11,7 @@ function MyApp({ Component, pageProps }: AppProps<{session: Session;}>) {
       <SessionProvider session={pageProps.session}>
         <Head>
           <title>Todo app</title>
+          <link rel="shortcut icon" href="../public/favicon.ico" />
         </Head>
         <ChakraProvider>
           <Header />
