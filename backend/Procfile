@@ -1,1 +1,1 @@
-web: java -jar -Djava.security.egd=file:/dev/./urandom build/libs/backend-0.0.1-all.jar
+web: java -jar -Djava.security.egd=file:/dev/./urandom build/libs/backend-all.jar

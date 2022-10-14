@@ -25,7 +25,12 @@ services:
     links:
       - database
     ports:
-      - 3001:3001
+      - 3001:8080
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -v http://localhost:8080/status || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       DATABASE_URL: postgres://postgres:password@database/postgres
       # The value of DEV doesn't matter, only that it's defined.

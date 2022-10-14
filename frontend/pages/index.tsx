@@ -1,20 +1,43 @@
-import type { NextPage } from 'next';
-import { useSession } from 'next-auth/react';
-import { Welcome } from '../components/Welcome';
+import {
+  Box,
+  Button,
+  Center,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+  useDisclosure,
+} from "@chakra-ui/react";
+import type { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import React from "react";
+import Header from "../components/header/Header";
+import { TabSelector } from "../components/tabs/TabSelector";
+import { Welcome } from "../components/Welcome";
 
 const Home: NextPage = () => {
   const { data: session } = useSession();
-  if (!session){
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  if (!session) {
     return (
-      <Welcome/>
-    )
+      <>
+        <Header />
+        <Welcome />
+      </>
+    );
   }
 
   return (
-    <div>
-      hello
-    </div>
-  )
-}
+    <>
+      <Header />
+      <TabSelector/>
 
-export default Home
+      <Box bgColor="purple">
+        <Center height="80vhcd ">hello</Center>
+      </Box>
+    </>
+  );
+};
+
+export default Home;
