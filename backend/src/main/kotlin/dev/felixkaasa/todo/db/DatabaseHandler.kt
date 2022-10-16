@@ -2,9 +2,9 @@ package dev.felixkaasa.todo.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.felixkaasa.todo.plugins.Person
+import dev.felixkaasa.todo.schema.Tab
+import dev.felixkaasa.todo.schema.Task
 import dev.felixkaasa.todo.schema.User
-import io.ktor.client.utils.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,7 +15,7 @@ class DatabaseHandler {
     private val port = System.getenv("DB_PORT")?.toIntOrNull() ?: 5432
     private val dbName = System.getenv("DB_NAME") ?: "postgres"
     private val dbUser = System.getenv("DB_USER") ?: "postgres"
-    private val dbPassword = "password"//System.getenv("DB_PASSWORD")
+    private val dbPassword = System.getenv("DB_PASSWORD")
     private val dbUrl = "jdbc:postgresql://$host:$port/$dbName"
 
     private fun dataSource(): HikariDataSource {
@@ -37,7 +37,7 @@ class DatabaseHandler {
     fun connect() {
         try {
             transaction(conn) {
-                SchemaUtils.create(User, Person)
+                SchemaUtils.create(User, Tab, Task)
             }
         } catch (e: Exception){
             System.err.println("[SERVER] error while trying to create tables / connect to server")

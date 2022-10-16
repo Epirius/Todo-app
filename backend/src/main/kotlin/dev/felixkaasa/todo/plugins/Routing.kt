@@ -1,6 +1,7 @@
 package dev.felixkaasa.todo.plugins
 
 import dev.felixkaasa.todo.schema.User
+import dev.felixkaasa.todo.schema.UserJson
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -35,6 +36,48 @@ fun Application.configureRouting() {
         get("/status"){
             call.respond(HttpStatusCode.OK, "Connection is healthy")
         }
+
+        post("/login") {
+            println("[/login] login was called")
+            try {
+                val user = call.receive<UserJson>()
+                println("[/login] user json was received")
+                val dbUser = transaction { User.select {
+                    User.email eq user.email
+                }.firstOrNull()}
+                println("[/login] user was selected from database" + dbUser.toString())
+
+                if (dbUser != null){
+                    call.respond(HttpStatusCode.OK, "[/login] user exists")
+                    return@post
+                }
+
+
+                println("[/login] user is not null, but not in database")
+
+                // at this point the user is new, and needs to be added to the database.
+                transaction {
+
+                    println("[/login] transaction started")
+                    addLogger(StdOutSqlLogger)
+                    User.insert {
+                        it[User.email] = user.email
+                    }
+                }
+
+                println("[/login] transaction finished")
+                call.respond(HttpStatusCode.OK, "[/login] user was created")
+            } catch (e : Exception){
+
+                println("[/login] request failed with: $e")
+                call.respond(HttpStatusCode.InternalServerError, "[/login] login was not successful")
+            }
+        }
+
+
+
+
+        // ------------------------------------------------------------------------------------------------------------
 
         post("/{email?}"){
             val email = call.parameters["email"]
