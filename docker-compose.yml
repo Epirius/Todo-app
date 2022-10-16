@@ -9,13 +9,13 @@ services:
         condition: service_healthy
     links:
       - backend
-    #environment:
-      #GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Must specify GOOGLE_CLIENT_ID in .env file or environment.}
-      #GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?Must specify GOOGLE_CLIENT_SECRET in .env file or environment.}
-      #GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Must specify GITHUB_CLIENT_ID in .env file or environment.}
-      #GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Must specify GITHUB_CLIENT_SECRET in .env file or environment.}
-      #NEXTAUTH_URL: http://localhost:3000
-      #JWT_SECRET: ${JWT_SECRET:?Must specify JWT_SECRET in .env file or environment.}
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Must specify GOOGLE_CLIENT_ID in .env file or environment.}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?Must specify GOOGLE_CLIENT_SECRET in .env file or environment.}
+      GITHUB_ID: ${GITHUB_ID:?Must specify GITHUB_ID in .env file or environment.}
+      GITHUB_SECRET: ${GITHUB_SECRET:?Must specify GITHUB_SECRET in .env file or environment.}
+      NEXTAUTH_URL: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:?Must specify JWT_SECRET in .env file or environment.}
 
   backend:
     build: ./backend
@@ -25,7 +25,7 @@ services:
     links:
       - database
     ports:
-      - 3001:8080
+      - 8080:8080
     healthcheck:
       test: ['CMD-SHELL', 'curl -v http://localhost:8080/status || exit 1']
       interval: 5s
@@ -36,15 +36,19 @@ services:
       # The value of DEV doesn't matter, only that it's defined.
       DEV: 'yes'
       # Values from .env file.
-      #ADMIN_KEY: ${ADMIN_KEY:?Must specify ADMIN_KEY in .env file or environment.}
+      ADMIN_KEY: ${ADMIN_KEY:?Must specify ADMIN_KEY in .env file or environment.}
+      DB_HOST:  "postgres" #"localhost"
+      DB_POST: "5432"
+      DB_NAME: "postgres"
+      DB_USER: "postgres"
+      DB_PASSWORD: "password"
 
   database:
     image: postgres:13.8-alpine
+    container_name: postgres
     restart: always
     ports:
-      - 5001:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      - 5432:5432
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
@@ -54,6 +58,3 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
-
-volumes:
-  pgdata:

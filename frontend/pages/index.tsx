@@ -19,6 +19,7 @@ const Home: NextPage = () => {
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+
   if (!session) {
     return (
       <>
@@ -27,7 +28,7 @@ const Home: NextPage = () => {
       </>
     );
   }
-
+  
   return (
     <>
       <Header />
