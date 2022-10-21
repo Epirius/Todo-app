@@ -1,10 +1,14 @@
 package dev.felixkaasa.todo.plugins
 
+import com.auth0.jwt.JWT
+import dev.felixkaasa.todo.schema.Tab
+import dev.felixkaasa.todo.schema.TabJson
 import dev.felixkaasa.todo.schema.User
 import dev.felixkaasa.todo.schema.UserJson
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
 import kotlinx.serialization.Serializable
@@ -29,12 +33,72 @@ fun Application.configureRouting() {
 
     routing {
 
-        get("/") {
-            call.respondText("Hello World!")
-        }
-
         get("/status"){
             call.respond(HttpStatusCode.OK, "Connection is healthy")
+        }
+
+        authenticate ("auth-jwt") {
+            get("/authstatus"){
+                call.respond(HttpStatusCode.OK, "Connection is healthy, with auth")
+            }
+
+            post("/tab"){
+                try {
+                    val tab = call.receive<TabJson>()
+                    val id = transaction {
+                        addLogger(StdOutSqlLogger)
+                        User.select{
+                            User.email eq tab.email
+                        }.firstOrNull()
+                    }
+                    if (id == null) {
+                        call.respond(HttpStatusCode.InternalServerError, "[/tab] Could not find the user")
+                        return@post
+                    }
+                    transaction {
+                        addLogger(StdOutSqlLogger)
+                        Tab.insert {
+                            it[Tab.tabName] = tab.tabName //todo maybe regex check this
+                            it[Tab.userId] = id[userId]
+                        }
+                    }
+                    call.respond(HttpStatusCode.OK)
+                    return@post
+                } catch (e: Exception){
+                    println("[/tab] error: $e")
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+
+            get("/tab"){
+                try {
+                    val id = call.receive<UserJson>()
+                    val tabs = transaction {
+                        (User innerJoin Tab)
+                            .select{User.email eq id.email}
+                    }
+                    call.respond(tabs)
+                    call.respond(HttpStatusCode.OK)
+                } catch (e: Exception){
+                    println("[/tab] error: $e")
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+        }
+
+        post("/login/token"){
+            try {
+                //TODO VERIFY USER FIRST
+                val user = call.receive<UserJson>()
+                println("[/login/token] recived request")
+                val token = createToken(user.email)
+                println("[/login/token] token created")
+                call.respond(hashMapOf("token" to token))
+                call.respond(HttpStatusCode.OK, "[/login/token] token created")
+            } catch (e :Exception){
+                println("[/login/token] error: $e")
+                call.respond(HttpStatusCode.InternalServerError)
+            }
         }
 
         post("/login") {
@@ -47,7 +111,9 @@ fun Application.configureRouting() {
                 }.firstOrNull()}
                 println("[/login] user was selected from database" + dbUser.toString())
 
+                //val token = createToken(user.email)
                 if (dbUser != null){
+                    //call.respond(hashMapOf("token" to token))
                     call.respond(HttpStatusCode.OK, "[/login] user exists")
                     return@post
                 }
@@ -64,13 +130,21 @@ fun Application.configureRouting() {
                         it[User.email] = user.email
                     }
                 }
-
-                println("[/login] transaction finished")
+                //call.respond(hashMapOf("token" to token))
                 call.respond(HttpStatusCode.OK, "[/login] user was created")
             } catch (e : Exception){
 
                 println("[/login] request failed with: $e")
                 call.respond(HttpStatusCode.InternalServerError, "[/login] login was not successful")
+            }
+        }
+
+        post("/addtab/{tabname?}") {
+            val tabname = call.parameters["tabname"]
+            println("-1-1-1-1-1-1-1-1" + call.attributes.allKeys)
+            println("token -------" + call.parameters.get("token"))
+            if (tabname == null) { //TODO maybe add regex to check if tabname is valid
+                call.respond(HttpStatusCode.BadRequest, "tabname is null")
             }
         }
 

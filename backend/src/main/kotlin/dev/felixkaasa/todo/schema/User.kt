@@ -13,17 +13,18 @@ data class UserJson(
 @Serializable
 data class TabJson(
     val tabName: String,
-
+    val email: String
     )
 
 @Serializable
 data class TASKJson(
     val taskName: String,
+    val email: String
     )
 
 
 object User : Table("USERS") {
-    val userId = integer("id").autoIncrement().uniqueIndex()
+    val userId: Column<Int> = integer("id").autoIncrement().uniqueIndex()
     val email: Column<String> = text("email").uniqueIndex()
     override val primaryKey = PrimaryKey(email)
 }

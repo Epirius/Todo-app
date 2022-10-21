@@ -48,7 +48,10 @@ export const Welcome = () => {
             mt={5}
             bg={useColorModeValue("black", "gray.900")}
             textColor="white"
-            onClick={() => signIn()}
+            onClick={() => {
+              let token = signIn();
+              console.log(token)
+            }}
           >
             Sign in
           </Button>

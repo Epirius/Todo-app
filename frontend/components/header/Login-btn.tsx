@@ -5,7 +5,6 @@ import { UnlockIcon } from "@chakra-ui/icons";
 
 export function LoginBtn() {
   const { data: session } = useSession();
-  console.log(session)
   if (session) {
     return (
       <Button colorScheme="cyan" size="sm" onClick={() => signOut()}>

@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.Database
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         DatabaseHandler().connect()
-        //configureSecurity()
+        configureSecurity()
         configureSerialization()
         configureRouting()
 

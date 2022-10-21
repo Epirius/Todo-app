@@ -3,7 +3,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - 3000:3000
+      - 3001:3000
     depends_on:
       backend:
         condition: service_healthy
@@ -43,6 +43,9 @@ services:
       DB_NAME: "postgres"
       DB_USER: "postgres"
       DB_PASSWORD: "password"
+      JWT_SECRET: ${JWT_SECRET:?Must specify JWT_SECRET in .env file or environment.}
+      JWT_ISSUER: "http://localhost:8080"
+      JWT_AUDIENCE: "dev.felixkaasa.todo"
 
   database:
     image: postgres:13.8-alpine
