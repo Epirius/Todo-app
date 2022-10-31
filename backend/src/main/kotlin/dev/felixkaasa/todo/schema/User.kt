@@ -5,6 +5,7 @@ import dev.felixkaasa.todo.schema.User.uniqueIndex
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
@@ -17,6 +18,7 @@ data class TabJson(
     val tabName: String,
     val email: String
     )
+
 
 @Serializable
 data class TASKJson(

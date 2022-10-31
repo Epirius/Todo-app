@@ -1,9 +1,9 @@
 package dev.felixkaasa.todo.plugins
 
-import com.auth0.jwt.JWT
 import dev.felixkaasa.todo.schema.Tab
 import dev.felixkaasa.todo.schema.TabJson
 import dev.felixkaasa.todo.schema.User
+import dev.felixkaasa.todo.schema.User.email
 import dev.felixkaasa.todo.schema.User.userId
 import dev.felixkaasa.todo.schema.UserJson
 import io.ktor.server.routing.*
@@ -12,23 +12,12 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
-import kotlinx.serialization.Serializable
+import io.ktor.websocket.*
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
-
-
-object Person : Table() {
-    val name: Column<String> = text("name").uniqueIndex()
-    val age: Column<Int> = integer("age")
-
-    override val primaryKey = PrimaryKey(name);
-}
-
-@Serializable
-data class PersonJson(
-    val name: String,
-    val age: Int,
-)
+import javax.swing.text.TabSet
 
 fun Application.configureRouting() {
 
@@ -81,15 +70,49 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("/tab") {
+            post("/tab/getTabs") {
                 try {
-                    val id = call.receive<UserJson>()
-                    val tabs = transaction {
-                        (User innerJoin Tab)
-                            .select { User.email eq id.email }
+                    println("[/tab/getTabs] received request")
+                    val user = call.receive<UserJson>()
+                    println("[/tab/getTabs] received json")
+                    val id = transaction {
+                        addLogger(StdOutSqlLogger)
+                        User.select {
+                            User.email eq user.email
+                        }.firstOrNull()
                     }
-                    call.respond(tabs)
-                    call.respond(HttpStatusCode.OK)
+                    println("[/tab/getTabs] got id from Users")
+                    if (id != null) {
+
+                        println("[/tab/getTabs] id is not null")
+                        val tabs = transaction {
+                            Tab.select{
+                                Tab.userId eq id[userId]
+                            }.toList().map { t ->
+                                TabJson(
+                                    t[Tab.tabName],
+                                    id[User.email]
+                                )
+                            }
+                        }
+                        println("[/tab/getTabs] created list")
+                        call.respond(tabs)
+                        println(tabs.joinToString(" "))
+                        println("-----")
+                        println(tabs.toString())
+                        println("-----")
+                        return@post
+                        /*
+                        println(tabList.joinToString(" "))
+                        call.respond(tabList)
+                        call.respond(HttpStatusCode.OK)
+
+                         */
+                    } else {
+
+                        println("[/tab/getTabs] id is null")
+                        call.respond(HttpStatusCode.BadRequest, "[/tab] could not find email from jwt token")
+                    }
                 } catch (e: Exception) {
                     println("[/tab] error: $e")
                     call.respond(HttpStatusCode.InternalServerError)

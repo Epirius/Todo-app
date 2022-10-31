@@ -10,10 +10,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       method: "POST",
       headers: { Authorization: `Bearer ${session.user.backendToken}` },
     };
-    const json = JSON.stringify({
-      tabName: tab,
-      email: session.user.email,
-    });
 
     return await axios
       .post(
