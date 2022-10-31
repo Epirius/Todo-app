@@ -29,9 +29,6 @@ export const authOptions: NextAuthOptions = {
         .post("http://0.0.0.0:8080/login", {
           //process.env.BACKEND_URL! + "/login", {
           email: user.email,
-          /*Headers: {
-            Authorizeation: "Bearer " + account?.access_token
-          }*/
         })
         .then((response) => {
           if (response.status == 200 && response.data.token !== null) {

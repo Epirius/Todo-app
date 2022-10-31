@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import dev.felixkaasa.todo.schema.Tab
 import dev.felixkaasa.todo.schema.TabJson
 import dev.felixkaasa.todo.schema.User
+import dev.felixkaasa.todo.schema.User.userId
 import dev.felixkaasa.todo.schema.UserJson
 import io.ktor.server.routing.*
 import io.ktor.http.*
@@ -44,24 +45,34 @@ fun Application.configureRouting() {
 
             post("/tab") {
                 try {
+                    println("[/tab] received request for creating a tab")
                     val tab = call.receive<TabJson>()
+                    println("[/tab] received json")
                     val id = transaction {
                         addLogger(StdOutSqlLogger)
                         User.select {
                             User.email eq tab.email
                         }.firstOrNull()
                     }
+                    println("[/tab] attempted to get user id")
                     if (id == null) {
+                        println("[/tab] id was null")
                         call.respond(HttpStatusCode.InternalServerError, "[/tab] Could not find the user")
                         return@post
                     }
+                    val userID = id[userId]
+                    println("---------")
+                    println(userID)
+                    println("---------")
+                    println("[/tab] user id is not null")
                     transaction {
                         addLogger(StdOutSqlLogger)
                         Tab.insert {
-                            it[Tab.tabName] = tab.tabName //todo maybe regex check this
-                            it[Tab.userId] = id[userId]
+                            it[tabName] = tab.tabName //todo maybe regex check this
+                            it[userId] = userID
                         }
                     }
+                    println("[/tab] tab inserted")
                     call.respond(HttpStatusCode.OK)
                     return@post
                 } catch (e: Exception) {
@@ -82,15 +93,6 @@ fun Application.configureRouting() {
                 } catch (e: Exception) {
                     println("[/tab] error: $e")
                     call.respond(HttpStatusCode.InternalServerError)
-                }
-            }
-
-            post("/addtab/{tabname?}") {
-                val tabname = call.parameters["tabname"]
-                println("-1-1-1-1-1-1-1-1" + call.attributes.allKeys)
-                println("token -------" + call.parameters.get("token"))
-                if (tabname == null) { //TODO maybe add regex to check if tabname is valid
-                    call.respond(HttpStatusCode.BadRequest, "tabname is null")
                 }
             }
 
