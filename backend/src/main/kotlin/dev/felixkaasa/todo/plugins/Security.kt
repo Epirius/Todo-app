@@ -47,6 +47,6 @@ fun createToken(email: String): String {
         .withAudience(jwtAudience)
         .withIssuer(issuer)
         .withClaim("email", email)
-        .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 30)))
+        .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 7))) // 7 days
         .sign(jwtAlgorithm)
 }
