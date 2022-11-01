@@ -12,15 +12,17 @@ fun Application.configureSerialization() {
     install(ContentNegotiation) {
         json(
             Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
+                ignoreUnknownKeys = true
+                encodeDefaults = true
             }
         )
     }
-
+/*
     routing {
         get("/json/kotlinx-serialization") {
             call.respond(mapOf("hello" to "world"))
         }
     }
+
+ */
 }

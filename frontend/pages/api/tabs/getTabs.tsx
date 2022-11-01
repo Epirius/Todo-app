@@ -11,13 +11,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     return await axios
-    .post( "http://0.0.0.0:8080/tab/getTabs", { email: session.user.email }, config)
-    .then((response) => {
-        res.status(200).json(response);
-    })
-    .catch((err) => {
-        res.status(400).json({message: "hello", err});
-    })
+      .post(
+        "http://0.0.0.0:8080/tab/getTabs",
+        { email: session.user.email },
+        config
+      )
+      .then((response) => {
+        res.status(response.status).json(response.data);
+      })
+      .catch((err) => {
+        res.status(400).json({ message: "hello", err });
+      });
   }
 };
 

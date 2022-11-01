@@ -97,9 +97,9 @@ fun Application.configureRouting() {
                         }
                         println("[/tab/getTabs] created list")
                         call.respond(tabs)
-                        println(tabs.joinToString(" "))
+                        call.respond(HttpStatusCode.OK)
                         println("-----")
-                        println(tabs.toString())
+                        println(tabs)
                         println("-----")
                         return@post
                         /*

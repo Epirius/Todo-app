@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Tabs,
   TabList,
@@ -10,6 +10,18 @@ import {
 } from "@chakra-ui/react";
 
 export const TabSelector = () => {
+  const [tabs, setTabs] = useState([
+    { tabName: 'Today', email: 'techtvids@gmail.com' },
+  ]);
+
+  const pull = async () => {
+    fetch('/api/tabs/getTabs')
+    .then(res => res.json())
+    //.then(res => console.log(res))
+    .then(res => setTabs(res))
+    //.then(data => setTabs(data))
+  }
+
   const data = [
     {
       label: "Today",
@@ -25,17 +37,18 @@ export const TabSelector = () => {
   return (
     <Tabs>
       <TabList>
-        {data.map((tab, index: number) => (
-          <Tab key={index}>{tab.label}</Tab>
+        {tabs.map((tab, index: number) => (
+          <Tab key={index}>{tab.tabName}</Tab>
         ))}
       </TabList>
       <TabPanels>
-        {data.map((tab, index: number) => (
+        {tabs.map((tab, index: number) => (
           <TabPanel p={4} key={index}>
-            {tab.content}
+            {tab.email + " -- tab index: " + index /*TODO*/}
           </TabPanel>
         ))}
       </TabPanels>
+      <Button onClick={pull}>pull</Button>
     </Tabs>
   );
 };
