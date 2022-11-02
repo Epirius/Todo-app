@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Tabs,
   TabList,
@@ -8,35 +8,50 @@ import {
   Button,
   Spacer,
 } from "@chakra-ui/react";
+import { CreateTab } from "./CreateTab";
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
-    { tabName: 'Today', email: 'techtvids@gmail.com' },
+    { tabName: "Today", email: "techtvids@gmail.com" },
   ]);
+  useEffect(() => {
+    pullTabs();
+  }, []);
 
-  const pull = async () => {
-    fetch('/api/tabs/getTabs')
-    .then(res => res.json())
-    //.then(res => console.log(res))
-    .then(res => setTabs(res))
+  const pullTabs = async () => {
+    fetch("/api/tabs/getTabs")
+      .then((res) => res.json())
+      //.then(res => console.log(res))
+      .then((res) => setTabs(res));
     //.then(data => setTabs(data))
-  }
+  };
 
   const data = [
     {
-      label: "Today",
-      content: "Perhaps the greatest dish ever invented.",
-    },
-    {
-      label: "School",
-      content:
-        "Perhaps the surest dish ever invented but fills the stomach more than rice.",
+      label: "No Tabs",
+      content: "No tabs could be found, try creating one",
     },
   ];
 
   return (
     <Tabs>
-      <TabList>
+      <TabList
+        overflowX="scroll"
+        overflowY="hidden"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "4px",
+            height: "4px"
+          },
+          "&::-webkit-scrollbar-track": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "#8ccef0",
+            borderRadius: "24px",
+          },
+        }}
+      >
         {tabs.map((tab, index: number) => (
           <Tab key={index}>{tab.tabName}</Tab>
         ))}
@@ -48,7 +63,8 @@ export const TabSelector = () => {
           </TabPanel>
         ))}
       </TabPanels>
-      <Button onClick={pull}>pull</Button>
+      <Button onClick={pullTabs}>pull</Button>
+      <CreateTab>create tab</CreateTab>
     </Tabs>
   );
 };
