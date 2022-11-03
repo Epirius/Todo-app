@@ -9,6 +9,7 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import { CreateTab } from "./CreateTab";
+import { Todo } from "../todo/Todo";
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
@@ -21,9 +22,16 @@ export const TabSelector = () => {
   const pullTabs = async () => {
     fetch("/api/tabs/getTabs")
       .then((res) => res.json())
-      //.then(res => console.log(res))
-      .then((res) => setTabs(res));
-    //.then(data => setTabs(data))
+      .then((res) => setTabs(res))
+      .catch((err) => {
+        console.log("could not fetch the tabs from backend. error: " + err);
+        setTabs([
+          {
+            tabName: "Error",
+            email: "Could not fetch the tabs from the backend",
+          },
+        ]);
+      });
   };
 
   const data = [
@@ -41,7 +49,7 @@ export const TabSelector = () => {
         css={{
           "&::-webkit-scrollbar": {
             width: "4px",
-            height: "4px"
+            height: "4px",
           },
           "&::-webkit-scrollbar-track": {
             width: "6px",
@@ -55,16 +63,20 @@ export const TabSelector = () => {
         {tabs.map((tab, index: number) => (
           <Tab key={index}>{tab.tabName}</Tab>
         ))}
+        
+        <Spacer />
+        <CreateTab pullTabsFromServer={pullTabs}>create tab</CreateTab>
       </TabList>
+
       <TabPanels>
         {tabs.map((tab, index: number) => (
           <TabPanel p={4} key={index}>
             {tab.email + " -- tab index: " + index /*TODO*/}
+            <Todo />
           </TabPanel>
         ))}
       </TabPanels>
       <Button onClick={pullTabs}>pull</Button>
-      <CreateTab>create tab</CreateTab>
     </Tabs>
   );
 };

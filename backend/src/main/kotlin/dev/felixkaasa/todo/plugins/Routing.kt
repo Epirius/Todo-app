@@ -1,23 +1,16 @@
 package dev.felixkaasa.todo.plugins
 
-import dev.felixkaasa.todo.schema.Tab
-import dev.felixkaasa.todo.schema.TabJson
-import dev.felixkaasa.todo.schema.User
-import dev.felixkaasa.todo.schema.User.email
+import dev.felixkaasa.todo.schema.*
 import dev.felixkaasa.todo.schema.User.userId
-import dev.felixkaasa.todo.schema.UserJson
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
-import io.ktor.websocket.*
-import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
-import javax.swing.text.TabSet
+
 
 fun Application.configureRouting() {
 
@@ -32,9 +25,119 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, "Connection is healthy, with auth")
             }
 
+            post("/todo"){
+                try{
+                    println("[/todo] ")
+                    val todo = call.receive<TaskJson>()
+                    println("[/todo] received json")
+                    val id = transaction {
+                        addLogger(StdOutSqlLogger)
+                        User.select {
+                            User.email eq todo.email
+                        }.firstOrNull()
+                    }
+                    println("[/todo] attempted to get user id")
+                    if (id == null) {
+                        println("[/todo] id was null")
+                        call.respond(HttpStatusCode.InternalServerError, "[/todo] Could not find the user")
+                        return@post
+                    }
+                    val tab = transaction {
+                        addLogger(StdOutSqlLogger)
+                        Tab.select{
+                            Tab.userId eq id[userId]
+                            Tab.tabName eq todo.tabName
+                        }.firstOrNull()
+                    }
+                    if (tab ==  null){
+                        println("[/todo] could not find the tab with given name")
+                        call.respond(HttpStatusCode.BadRequest, "could not find the tab with the given name")
+                        return@post
+                    }
+                    println("[/todo] found the correct tab")
+
+                    println("name: "+ todo.taskName + "  desc: " + todo.description +"  date: " +todo.date+"  done: "+todo.done)
+
+                    transaction {
+                        addLogger(StdOutSqlLogger)
+                        Task.insert {
+                            it[taskName] = todo.taskName
+                            it[description] = todo.description
+                            it[date] = todo.date
+                            it[done] = todo.done
+                            it[tabId] = tab[Tab.tabId]
+                        }
+                    }
+                    println("[/todo] task was inserted")
+                    call.respond(HttpStatusCode.OK)
+
+                } catch (e: Exception){
+                    println("[/todo] error: $e")
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+/*
+            post("/todo/get"){
+                try{
+                    println("[/todo/get] ")
+                    val tabInput = call.receive<TabJson>()
+                    println("[/todo/get] received json")
+                    val id = transaction {
+                        addLogger(StdOutSqlLogger)
+                        User.select {
+                            User.email eq tabInput.email
+                        }.firstOrNull()
+                    }
+                    println("[/todo/get] attempted to get user id")
+                    if (id == null) {
+                        println("[/todo/get] id was null")
+                        call.respond(HttpStatusCode.InternalServerError, "[/todo/get] Could not find the user")
+                        return@post
+                    }
+                    println("[/todo/get] attempting to get the tab")
+                    val tab = transaction {
+                        addLogger(StdOutSqlLogger)
+                        Tab.select{
+                            Tab.userId eq id[userId]
+                            Tab.tabName eq tabInput.tabName
+                        }.firstOrNull()
+                    }
+                    if (tab ==  null){
+                        println("[/todo/get] could not find the tab with given name")
+                        call.respond(HttpStatusCode.BadRequest, "[/todo/get] could not find the tab with the given name")
+                        return@post
+                    }
+                    println("[/todo/get] found the tab")
+                    val tasks = transaction {
+                        Task.select{
+                            Task.tabId eq tab[tabId]
+                        }.toList().map { t ->
+                            TASKJson(
+                                t[taskName],
+                                tab[tabName],
+                                id[User.email],
+                                t[description],
+                                t[date],
+                                t[done]
+                           )
+                        }
+                    }
+                    println("[/todo/get] created task list")
+
+                    call.respond(tasks)
+                    call.respond(HttpStatusCode.OK)
+
+                } catch (e: Exception){
+                    println("[/todo] error: $e")
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+
+ */
+
             post("/tab") {
                 try {
-                    println("[/tab] received request for creating a tab")
+                    println("[/tab] ")
                     val tab = call.receive<TabJson>()
                     println("[/tab] received json")
                     val id = transaction {
@@ -50,10 +153,6 @@ fun Application.configureRouting() {
                         return@post
                     }
                     val userID = id[userId]
-                    println("---------")
-                    println(userID)
-                    println("---------")
-                    println("[/tab] user id is not null")
                     transaction {
                         addLogger(StdOutSqlLogger)
                         Tab.insert {
@@ -98,9 +197,6 @@ fun Application.configureRouting() {
                         println("[/tab/getTabs] created list")
                         call.respond(tabs)
                         call.respond(HttpStatusCode.OK)
-                        println("-----")
-                        println(tabs)
-                        println("-----")
                         return@post
                         /*
                         println(tabList.joinToString(" "))

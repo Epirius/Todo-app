@@ -1,11 +1,7 @@
 package dev.felixkaasa.todo.schema
 
-import dev.felixkaasa.todo.schema.User.autoIncrement
-import dev.felixkaasa.todo.schema.User.uniqueIndex
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
@@ -21,9 +17,13 @@ data class TabJson(
 
 
 @Serializable
-data class TASKJson(
+data class TaskJson(
     val taskName: String,
-    val email: String
+    val tabName: String,
+    val email: String,
+    val description: String,
+    val date: String,
+    val done: Boolean
     )
 
 
@@ -40,7 +40,12 @@ object Tab : Table("TABS") {
     override  val primaryKey = PrimaryKey(tabId)
 }
 
-object Task: IntIdTable("TASKS") {
-    var taskName = text("taskName")
+object Task: Table("TASKS") {
+    var taskName: Column<String> =text("taskName")
+    val description: Column<String> = varchar("description", 255)
+    val date: Column<String> = varchar("date",255)
+    val done: Column<Boolean> = bool("done")
     val tabId = reference("tabId", Tab.tabId)
+    private val taskId: Column<Int> = integer("taskId").autoIncrement().uniqueIndex()
+    override  val primaryKey = PrimaryKey(taskId)
 }

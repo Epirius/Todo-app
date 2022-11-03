@@ -1,3 +1,4 @@
+import { AddIcon } from "@chakra-ui/icons";
 import {
   FormControl,
   FormLabel,
@@ -10,30 +11,45 @@ import {
   PopoverHeader,
   PopoverTrigger,
   InputLeftElement,
+  IconButton,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
+import { pathToFileURL } from "url";
+
+interface TabFormProps {
+  pullTabsFromServer: () => any;
+}
 
 interface CreateTabProps {
   children: String;
+  pullTabsFromServer: () => any;
 }
 
-export const CreateTab = ({ children }: CreateTabProps) => {
+export const CreateTab = ({ children, pullTabsFromServer }: CreateTabProps) => {
   return (
     <Popover>
       <PopoverTrigger>
+        {/*
         <Button>{children}</Button>
+        */}
+        <IconButton
+          aria-label="Create tab"
+          colorScheme="none"
+          color={'#38A169'}
+          icon={<AddIcon />}
+        />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverHeader>Create Tab</PopoverHeader>
         <PopoverContent>
-          <TabForm />
+          <TabForm pullTabsFromServer={pullTabsFromServer} />
         </PopoverContent>
       </PopoverContent>
     </Popover>
   );
 };
 
-const TabForm = () => {
+const TabForm = ({ pullTabsFromServer }: TabFormProps) => {
   const [input, setInput] = useState("");
   const inputChange = (e: {
     target: { value: React.SetStateAction<string> };
@@ -45,7 +61,7 @@ const TabForm = () => {
 
   const submitBtn = () => {
     if (inputError) return;
-    fetch("/api/tabs/create/" + input)
+    fetch("/api/tabs/create/" + input).then(pullTabsFromServer());
   };
 
   return (
