@@ -23,7 +23,6 @@ const Home: NextPage = () => {
   if (!session) {
     return (
       <>
-        <Header />
         <Welcome />
       </>
     );
@@ -31,12 +30,7 @@ const Home: NextPage = () => {
   
   return (
     <>
-      <Header />
       <TabSelector/>
-
-      <Box bgColor="purple">
-        <Center height="80vhcd ">hello</Center>
-      </Box>
     </>
   );
 };
