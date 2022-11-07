@@ -1,6 +1,7 @@
 import { DeleteIcon } from "@chakra-ui/icons";
 import { Button, Center, IconButton, Spacer, Text } from "@chakra-ui/react";
 import React from "react";
+import { CreateForm } from "../CreateForm";
 import { Todo } from "../todo/Todo";
 
 interface tabPageProps {
@@ -12,7 +13,11 @@ export const TabPage = ({ tabName, pullTabsFromServer }: tabPageProps) => {
   const deleteTab = async () => {
     fetch("/api/tabs/delete/" + tabName).then(res => pullTabsFromServer());
   };
-  const createTask = () => {console.log("createTask click")};
+  const createTask = async (slug: String) => {
+    console.log("createTask click")
+    fetch("/api/todo/create/" + tabName + "_" + slug)
+    .then(pullTabsFromServer())
+};
   return (
     <>
       <Center padding="5px 20px">
@@ -20,7 +25,7 @@ export const TabPage = ({ tabName, pullTabsFromServer }: tabPageProps) => {
           {tabName}:
         </Text>
         <Spacer />
-        <Button onClick={createTask} fontSize="1em">Create task</Button>
+        <CreateForm callbackFunc={createTask} type='task'/>
         <IconButton
           onClick={deleteTab}
           backgroundColor="red.400"

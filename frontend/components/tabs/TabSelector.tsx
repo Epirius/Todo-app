@@ -8,9 +8,8 @@ import {
   Button,
   Spacer,
 } from "@chakra-ui/react";
-import { CreateTab } from "./CreateTab";
-import { Todo } from "../todo/Todo";
 import { TabPage } from "./TabPage";
+import { CreateForm } from "../CreateForm";
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
@@ -34,6 +33,11 @@ export const TabSelector = () => {
         ]);
       });
   };
+
+  const createTabCallback = async (slug: String) => {
+    fetch("/api/tabs/create/" + slug)
+    .then(res => pullTabs());
+  }
 
   const data = [
     {
@@ -66,7 +70,7 @@ export const TabSelector = () => {
         ))}
 
         <Spacer />
-        <CreateTab pullTabsFromServer={pullTabs}/>
+        <CreateForm callbackFunc={createTabCallback} type='tab'/>
       </TabList>
 
       <TabPanels>

@@ -7,7 +7,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { todo } = req.query;
   if (typeof todo == "string"){
     let taskName: string, tabName: string, date: string;
-    [ taskName, tabName, date ] = todo.split("_");
+    [ tabName, taskName, date ] = todo.split("_");
     if (taskName === null || tabName === null || date === null ) {
       res.status(400).json({ messagee: "some of the input was null" });
     }
