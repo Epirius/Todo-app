@@ -1,4 +1,14 @@
-import { Box, Button, Flex, Stack, HStack, Spacer } from "@chakra-ui/react";
+import { DeleteIcon } from "@chakra-ui/icons";
+import {
+  Box,
+  Text,
+  Flex,
+  Stack,
+  HStack,
+  Spacer,
+  Checkbox,
+  IconButton,
+} from "@chakra-ui/react";
 import React from "react";
 
 interface todoProps {
@@ -8,12 +18,20 @@ interface todoProps {
     email: String;
     description: String;
     date: String;
-    done: Boolean;
+    done: boolean;
   };
+  pullTask: () => any;
 }
 
-export const Todo = ({ props }: todoProps) => {
+export const Todo = ({ props, pullTask }: todoProps) => {
   let { taskName, tabName, email, description, date, done } = props;
+
+  const deleteTask = async () => {
+    fetch("/api/todo/delete/" + tabName + "_" + taskName).then(
+      pullTask()
+    );
+  };
+
   return (
     <Stack spacing="24px" padding="5px 20px">
       <Box
@@ -22,11 +40,17 @@ export const Todo = ({ props }: todoProps) => {
         height="5rem"
         padding="1rem 2rem"
       >
-        <HStack>
+        <HStack spacing="2rem">
           <h2>{taskName}:</h2>
           <Spacer />
-          <Button>Done</Button>
-          <Button>Delete</Button>
+          <Text>{date}</Text>
+          <Checkbox isChecked={done}>Done</Checkbox>
+          <IconButton
+            onClick={() => deleteTask()}
+            backgroundColor="red.400"
+            icon={<DeleteIcon />}
+            aria-label="Delete tab"
+          />
         </HStack>
       </Box>
     </Stack>

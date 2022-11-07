@@ -12,7 +12,6 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { pathToFileURL } from "url";
 
 interface FormButton {
   callbackFunc: (slug: String) => any;
@@ -78,18 +77,34 @@ const Form = ({ callbackFunc, type }: FormProps) => {
     else throw Error("could not understand Type for submit btn");
   };
 
-  let inpt = [];
-  inpt.push(<FormLabel>Name</FormLabel>);
-  inpt.push(<Input type="Name" value={name} onChange={nameChange} />);
   if (type === "task") {
-    inpt.push(<FormLabel>Date</FormLabel>);
-    inpt.push(<Input type="Date" value={date} onChange={dateChange} />);
+    return (
+      <FormControl>
+        <FormLabel>Name</FormLabel>
+        <Input type="Name" value={name} onChange={nameChange} />
+        <FormLabel>Date</FormLabel>
+        <Input
+          type="Date"
+          value={date}
+          onChange={dateChange}
+          isRequired={true}
+        />
+        <Button onClick={submitBtn}>Submit</Button>
+      </FormControl>
+    );
+  } else if (type === "tab") {
+    return (
+      <FormControl>
+        <FormLabel>Name</FormLabel>
+        <Input type="Name" value={name} onChange={nameChange} />
+        <Button onClick={submitBtn}>Submit</Button>
+      </FormControl>
+    );
+  } else {
+    return (
+      <FormControl>
+        <FormLabel>COULD NOT FIND TYPE</FormLabel>
+      </FormControl>
+    );
   }
-
-  return (
-    <FormControl>
-      {inpt}
-      <Button onClick={submitBtn}>Submit</Button>
-    </FormControl>
-  );
 };

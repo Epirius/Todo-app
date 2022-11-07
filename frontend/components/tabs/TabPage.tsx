@@ -1,6 +1,7 @@
 import { DeleteIcon } from "@chakra-ui/icons";
 import { Button, Center, IconButton, Spacer, Text } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { v4 } from "uuid";
 import { CreateForm } from "../CreateForm";
 import { Todo } from "../todo/Todo";
 
@@ -21,16 +22,15 @@ export const TabPage = ({ tabName, pullTabsFromServer }: tabPageProps) => {
     },
   ]);
 
-  /*useEffect(() => {
+  useEffect(() => {
     pullTasks();
-  }, []);*/
+  }, []);
 
   const pullTasks = async () => {
     fetch("/api/todo/" + tabName)
       .then((res) => res.json())
       .then((res) => {
-        setTasks(res);
-        console.log(res);
+        setTasks(res)
       })
       .catch((err) => {
         console.log("could not fetch the tasks from backend. error: " + err);
@@ -50,9 +50,8 @@ export const TabPage = ({ tabName, pullTabsFromServer }: tabPageProps) => {
     fetch("/api/tabs/delete/" + tabName).then((res) => pullTabsFromServer());
   };
   const createTask = async (slug: String) => {
-    console.log("createTask click");
-    fetch("/api/todo/create/" + tabName + "_" + slug).then(
-      pullTabsFromServer()
+    fetch("/api/todo/create/" + tabName + "_" + slug).then(res =>
+      pullTasks()
     );
   };
   return (
@@ -75,7 +74,7 @@ export const TabPage = ({ tabName, pullTabsFromServer }: tabPageProps) => {
 
       {tasks.map((task, index: number) => {
         return (
-          <Todo key={index} props={task}/>
+          <Todo key={v4()} props={task} pullTask={pullTasks}/>
         );
       })}
     </>

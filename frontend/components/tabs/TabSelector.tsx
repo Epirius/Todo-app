@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { TabPage } from "./TabPage";
 import { CreateForm } from "../CreateForm";
+import { v4 } from 'uuid';
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
@@ -47,7 +48,7 @@ export const TabSelector = () => {
   ];
 
   return (
-    <Tabs variant="enclosed">
+    <Tabs variant="enclosed" >
       <TabList
         overflowX="scroll"
         overflowY="hidden"
@@ -66,7 +67,7 @@ export const TabSelector = () => {
         }}
       >
         {tabs.map((tab, index: number) => (
-          <Tab key={index}>{tab.tabName}</Tab>
+          <Tab key={v4()}>{tab.tabName}</Tab>
         ))}
 
         <Spacer />
@@ -75,7 +76,7 @@ export const TabSelector = () => {
 
       <TabPanels>
         {tabs.map((tab, index: number) => (
-          <TabPanel p={4} key={index}>
+          <TabPanel p={4} key={v4()}>
             <TabPage tabName={tab.tabName} pullTabsFromServer={pullTabs} />
           </TabPanel>
         ))}
