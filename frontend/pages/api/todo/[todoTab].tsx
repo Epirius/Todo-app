@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
+import { json } from "stream/consumers";
 
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -20,10 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             },
             config
           )
-          .then((response) => {
-            console.log(response);
-            res.status(response.status).json({ message: "server response ok" });
-          })
+          .then((response) => (res.status(response.status).json(response.data)))
           .catch((err) => {
             console.log(err);
             res.status(400).json(err);
