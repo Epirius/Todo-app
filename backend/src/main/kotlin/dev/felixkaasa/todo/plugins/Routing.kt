@@ -65,4 +65,12 @@ fun getUser(user: UserJson): ResultRow? {
     }
     return id
 }
-
+fun getUser(user: DelTaskJson): ResultRow? {
+    val id = transaction {
+        addLogger(StdOutSqlLogger)
+        User.select {
+            User.email eq user.email
+        }.firstOrNull()
+    }
+    return id
+}

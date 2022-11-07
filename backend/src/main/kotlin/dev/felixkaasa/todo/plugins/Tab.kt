@@ -1,9 +1,6 @@
 package dev.felixkaasa.todo.plugins
 
-import dev.felixkaasa.todo.schema.Tab
-import dev.felixkaasa.todo.schema.TabJson
-import dev.felixkaasa.todo.schema.User
-import dev.felixkaasa.todo.schema.UserJson
+import dev.felixkaasa.todo.schema.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -74,6 +71,44 @@ fun Route.tab(){
             return@post
         } catch (e: Exception) {
             println("[/tab] error: $e")
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/tab/delete"){
+        try {
+            println("[/tab/delete] ")
+            val tabInput = call.receive<TabJson>()
+            println("[/tab/delete] received json")
+            val id = getUser(tabInput)
+            println("[/tab/delete] attempted to get user id")
+            if (id == null) {
+                println("[/tab/delete] id was null")
+                call.respond(HttpStatusCode.InternalServerError, "[/tab/delete] Could not find the user")
+                return@post
+            }
+            println("[/tab/delete] id is not null. trying to get the tab.")
+            val tab = getTab(id, tabInput)
+            if (tab == null) {
+                println("[/tab/delete] could not find the tab with given name")
+                call.respond(HttpStatusCode.BadRequest, "[/tab/delete] could not find the tab with the given name")
+                return@post
+            }
+            println("[/tab/delete] the tab is not null")
+            transaction {
+                addLogger(StdOutSqlLogger)
+                Task.deleteWhere {
+                    Task.tabId eq tab[Tab.tabId]
+                }
+                Tab.deleteWhere {
+                    Tab.tabId eq tab[Tab.tabId]
+                }
+            }
+            println("[/tab/delete] tab and its todo items were deleted")
+            call.respond(HttpStatusCode.OK)
+
+        } catch (e: Exception) {
+            println("[/tab/delete] error: $e")
             call.respond(HttpStatusCode.InternalServerError)
         }
     }

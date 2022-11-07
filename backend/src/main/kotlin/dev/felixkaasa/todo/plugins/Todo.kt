@@ -71,13 +71,7 @@ fun Route.todo() {
                 return@post
             }
             println("[/todo/get] attempting to get the tab")
-            val tab = transaction {
-                addLogger(StdOutSqlLogger)
-                Tab.select {
-                    Tab.userId eq id[User.userId]
-                    Tab.tabName eq tabInput.tabName
-                }.firstOrNull()
-            }
+            val tab = getTab(id, tabInput)
             if (tab == null) {
                 println("[/todo/get] could not find the tab with given name")
                 call.respond(HttpStatusCode.BadRequest, "[/todo/get] could not find the tab with the given name")
@@ -108,6 +102,72 @@ fun Route.todo() {
             call.respond(HttpStatusCode.InternalServerError)
         }
     }
+
+    post("/todo/delete"){
+        try{
+            println("[/todo/delete] ")
+            val delTaskInput = call.receive<DelTaskJson>()
+            println("[/todo/delete] received json")
+            val id = getUser(delTaskInput)
+            println("[/todo/delete] attempted to get user id")
+            if (id == null) {
+                println("[/todo/delete] id was null")
+                call.respond(HttpStatusCode.InternalServerError, "[/todo/delete] Could not find the user")
+                return@post
+            }
+            println("[/todo/delete] attempting to get the tab")
+            val tab = getTab(id, delTaskInput)
+            if (tab == null) {
+                println("[/todo/delete] could not find the tab with given name")
+                call.respond(HttpStatusCode.BadRequest, "[/todo/delete] could not find the tab with the given name")
+                return@post
+            }
+            println("[/todo/delete] tab is not null")
+            transaction {
+                addLogger(StdOutSqlLogger)
+                Task.deleteWhere {
+                    Task.tabId eq tab[Tab.tabId]
+                    Task.taskName eq delTaskInput.taskName
+                }
+            }
+            println("[/todo/delete] deleted task")
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            println("[/todo/delete] error: $e")
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
 }
 
+fun getTab(
+    id: ResultRow,
+    tabInput: TabJson
+): ResultRow? {
+    val tab = transaction {
+        addLogger(StdOutSqlLogger)
+        Tab.select {
+            Tab.userId eq id[User.userId]
+            Tab.tabName eq tabInput.tabName
+        }.firstOrNull()
+    }
+    println("[/todo/delete]  ----------  tab: $tab")
+    return tab
+}
+
+fun getTab(
+    id: ResultRow,
+    tabInput: DelTaskJson
+): ResultRow? {
+    val tab = transaction {
+        addLogger(StdOutSqlLogger)
+        Tab.select {
+            Tab.userId eq id[User.userId]
+            Tab.tabName eq tabInput.tabName
+        }.firstOrNull()
+    }
+    println("[/todo/delete]  ----------  tab: $tab")
+    return tab
+}
+
+//TODO make sure tabs dont have the same name
 

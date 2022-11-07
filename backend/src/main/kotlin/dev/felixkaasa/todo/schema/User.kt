@@ -26,6 +26,13 @@ data class TaskJson(
     val done: Boolean
     )
 
+@Serializable
+data class DelTaskJson(
+    val tabName: String,
+    val taskName: String,
+    val email: String
+)
+
 
 object User : Table("USERS") {
     val userId: Column<Int> = integer("id").autoIncrement().uniqueIndex()
