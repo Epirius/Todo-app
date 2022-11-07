@@ -21,17 +21,13 @@ interface TabFormProps {
 }
 
 interface CreateTabProps {
-  children: String;
   pullTabsFromServer: () => any;
 }
 
-export const CreateTab = ({ children, pullTabsFromServer }: CreateTabProps) => {
+export const CreateTab = ({ pullTabsFromServer }: CreateTabProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        {/*
-        <Button>{children}</Button>
-        */}
         <IconButton
           aria-label="Create tab"
           colorScheme="none"
@@ -59,7 +55,7 @@ const TabForm = ({ pullTabsFromServer }: TabFormProps) => {
 
   const inputError = input === "";
 
-  const submitBtn = () => {
+  const submitBtn =  async () => {
     if (inputError) return;
     fetch("/api/tabs/create/" + input).then(pullTabsFromServer());
   };

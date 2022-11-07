@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { CreateTab } from "./CreateTab";
 import { Todo } from "../todo/Todo";
+import { TabPage } from "./TabPage";
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
@@ -42,7 +43,7 @@ export const TabSelector = () => {
   ];
 
   return (
-    <Tabs>
+    <Tabs variant="enclosed">
       <TabList
         overflowX="scroll"
         overflowY="hidden"
@@ -63,16 +64,15 @@ export const TabSelector = () => {
         {tabs.map((tab, index: number) => (
           <Tab key={index}>{tab.tabName}</Tab>
         ))}
-        
+
         <Spacer />
-        <CreateTab pullTabsFromServer={pullTabs}>create tab</CreateTab>
+        <CreateTab pullTabsFromServer={pullTabs}/>
       </TabList>
 
       <TabPanels>
         {tabs.map((tab, index: number) => (
           <TabPanel p={4} key={index}>
-            {tab.email + " -- tab index: " + index /*TODO*/}
-            <Todo />
+            <TabPage tabName={tab.tabName} pullTabsFromServer={pullTabs} />
           </TabPanel>
         ))}
       </TabPanels>
