@@ -13,11 +13,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return await axios
       .post(
-        "http://0.0.0.0:8080/tab",
-        {
-          tabName: tab,
-          email: session.user.email,
-        },
+        "http://0.0.0.0:8080/tab" + tab,
         config
       )
       .then((response) => {
