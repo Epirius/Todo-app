@@ -19,18 +19,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (session) {
         const config: AxiosRequestConfig = {
-          method: "POST",
+          method: "DELETE",
           headers: { Authorization: `Bearer ${session.user.backendToken}` },
         };
   
         return await axios
-          .post(
-            "http://0.0.0.0:8080/todo/delete",
-            {
-                tabName: tabName,
-                taskName: taskName,
-                email: session.user.email,
-            },
+          .delete(
+            "http://0.0.0.0:8080/todo/" + tabName + "/" + taskName,
             config
           )
           .then((response) => {
