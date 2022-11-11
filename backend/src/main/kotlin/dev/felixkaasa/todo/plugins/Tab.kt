@@ -46,49 +46,63 @@ fun Route.tab(){
 
     }
 
-    post("/tab") {
-        println("[/tab] ")
-        val tab = call.receive<TabJson>()
-        println("[/tab] received json")
-        val id = getUser(tab)
-        println("[/tab] attempted to get user id")
+    post("/tab/{tab}") {
+        println("------------------< tab/create >-----------------------")
+        val tab = call.parameters["tab"]
+        if (tab == null){
+            call.respond(HttpStatusCode.BadRequest, "[tab create] tabname was null")
+            return@post
+        }
+
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            return@post
+        }
+
+        val id = getUser(email)
         if (id == null) {
-            println("[/tab] id was null")
             call.respond(HttpStatusCode.InternalServerError, "[/tab] Could not find the user")
             return@post
         }
-        val userID = id[User.userId]
+
         transaction {
             addLogger(StdOutSqlLogger)
             Tab.insert {
-                it[tabName] = tab.tabName //todo maybe regex check this
-                it[userId] = userID
+                it[tabName] = tab //todo maybe regex check this
+                it[userId] = id[User.userId]
             }
         }
-        println("[/tab] tab inserted")
         call.respond(HttpStatusCode.OK)
-        return@post
+        println("------------------</ tab/create >-----------------------")
     }
 
-    post("/tab/delete"){
-        println("[/tab/delete] ")
-        val tabInput = call.receive<TabJson>()
-        println("[/tab/delete] received json")
-        val id = getUser(tabInput)
-        println("[/tab/delete] attempted to get user id")
+    delete("/tab/{tab}"){
+        println("------------------< tab/delete >-----------------------")
+        val tabName = call.parameters["tab"]
+        if (tabName == null){
+            call.respond(HttpStatusCode.BadRequest, "[tab create] tabname was null")
+            return@delete
+        }
+
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            return@delete
+        }
+
+        val id = getUser(email)
         if (id == null) {
-            println("[/tab/delete] id was null")
-            call.respond(HttpStatusCode.InternalServerError, "[/tab/delete] Could not find the user")
-            return@post
+            call.respond(HttpStatusCode.InternalServerError, "[tab delete] Could not find the user")
+            return@delete
         }
-        println("[/tab/delete] id is not null. trying to get the tab.")
-        val tab = getTab(id, tabInput)
-        if (tab == null) {
-            println("[/tab/delete] could not find the tab with given name")
-            call.respond(HttpStatusCode.BadRequest, "[/tab/delete] could not find the tab with the given name")
-            return@post
+
+        val tab = getTab(id, tabName)
+        if (tab == null){
+            call.respond(HttpStatusCode.InternalServerError, "[tab delete] Could not find the tab")
+            return@delete
         }
-        println("[/tab/delete] the tab is not null")
+
         transaction {
             addLogger(StdOutSqlLogger)
             Task.deleteWhere {
@@ -98,9 +112,8 @@ fun Route.tab(){
                 tabId eq tab[tabId]
             }
         }
-        println("[/tab/delete] tab and its todo items were deleted")
         call.respond(HttpStatusCode.OK)
-
+        println("------------------</ tab/delete >-----------------------")
 
     }
 }

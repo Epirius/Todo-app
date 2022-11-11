@@ -14,50 +14,37 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.todo() {
     post("/todo") {
-        try {
-            println("[/todo] ")
-            val todo = call.receive<TaskJson>()
-            println("[/todo] received json")
-            val id = getUser(todo)
-            println("[/todo] attempted to get user id")
-            if (id == null) {
-                println("[/todo] id was null")
-                call.respond(HttpStatusCode.InternalServerError, "[/todo] Could not find the user")
-                return@post
-            }
-            val tab = transaction {
-                addLogger(StdOutSqlLogger)
-                Tab.select {
-                    Tab.userId eq id[User.userId]
-                    Tab.tabName eq todo.tabName
-                }.firstOrNull()
-            }
-            if (tab == null) {
-                println("[/todo] could not find the tab with given name")
-                call.respond(HttpStatusCode.BadRequest, "could not find the tab with the given name")
-                return@post
-            }
-            println("[/todo] found the correct tab")
-
-            println("name: " + todo.taskName + "  desc: " + todo.description + "  date: " + todo.date + "  done: " + todo.done)
-
-            transaction {
-                addLogger(StdOutSqlLogger)
-                Task.insert {
-                    it[taskName] = todo.taskName
-                    it[description] = todo.description
-                    it[date] = todo.date
-                    it[done] = todo.done
-                    it[tabId] = tab[Tab.tabId]
-                }
-            }
-            println("[/todo] task was inserted")
-            call.respond(HttpStatusCode.OK)
-
-        } catch (e: Exception) {
-            println("[/todo] error: $e")
-            call.respond(HttpStatusCode.InternalServerError)
+        println("------------------< todo/create >-----------------------")
+        val todo = call.receive<TaskJson>()
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            return@post
         }
+        val id = getUser(email)
+        if (id == null) {
+            call.respond(HttpStatusCode.InternalServerError, "[/todo] Could not find the user")
+            return@post
+        }
+
+        val tab = getTab(id, todo.tabName)
+        if (tab == null) {
+            call.respond(HttpStatusCode.BadRequest, "could not find the tab with the given name")
+            return@post
+        }
+
+        transaction {
+            addLogger(StdOutSqlLogger)
+            Task.insert {
+                it[taskName] = todo.taskName
+                it[description] = todo.description
+                it[date] = todo.date
+                it[done] = todo.done
+                it[tabId] = tab[Tab.tabId]
+            }
+        }
+        call.respond(HttpStatusCode.OK)
+        println("------------------</ todo/create >-----------------------")
     }
 
     get("/todo/{tab}") {
@@ -99,10 +86,8 @@ fun Route.todo() {
                 )
             }
         }
-
         call.respond(tasks)
         call.respond(HttpStatusCode.OK)
-
         println("------------------</ todo/get >-----------------------")
     }
 
