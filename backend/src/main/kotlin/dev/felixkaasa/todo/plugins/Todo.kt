@@ -3,6 +3,8 @@ package dev.felixkaasa.todo.plugins
 import dev.felixkaasa.todo.schema.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -58,49 +60,50 @@ fun Route.todo() {
         }
     }
 
-    post("/todo/get") {
-        try {
-            println("[/todo/get] ")
-            val tabInput = call.receive<TabJson>()
-            println("[/todo/get] received json")
-            val id = getUser(tabInput)
-            println("[/todo/get] attempted to get user id")
-            if (id == null) {
-                println("[/todo/get] id was null")
-                call.respond(HttpStatusCode.InternalServerError, "[/todo/get] Could not find the user")
-                return@post
-            }
-            println("[/todo/get] attempting to get the tab")
-            val tab = getTab(id, tabInput)
-            if (tab == null) {
-                println("[/todo/get] could not find the tab with given name")
-                call.respond(HttpStatusCode.BadRequest, "[/todo/get] could not find the tab with the given name")
-                return@post
-            }
-            println("[/todo/get] found the tab")
-            val tasks = transaction {
-                Task.select {
-                    Task.tabId eq tab[Tab.tabId]
-                }.toList().map { t ->
-                    TaskJson(
-                        t[Task.taskName],
-                        tab[Tab.tabName],
-                        id[User.email],
-                        t[Task.description],
-                        t[Task.date],
-                        t[Task.done]
-                    )
-                }
-            }
-            println("[/todo/get] created task list")
-
-            call.respond(tasks)
-            call.respond(HttpStatusCode.OK)
-
-        } catch (e: Exception) {
-            println("[/todo] error: $e")
-            call.respond(HttpStatusCode.InternalServerError)
+    get("/todo/{tabName}") {
+        println("------------------< todo/get >-----------------------")
+        val tabName = call.parameters["tabName"]
+        if (tabName == null){
+            call.respond(HttpStatusCode.BadRequest, "[get todo] tab name was null")
+            return@get
         }
+
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            return@get
+        }
+
+        val id = getUser(email)
+        if (id == null) {
+            call.respond(HttpStatusCode.InternalServerError, "[/todo/get] Could not find the user")
+            return@get
+        }
+
+        val tab = getTab(id, tabName)
+        if (tab == null) {
+            call.respond(HttpStatusCode.BadRequest, "[/todo/get] could not find the tab with the given name")
+            return@get
+        }
+        val tasks = transaction {
+            Task.select {
+                Task.tabId eq tab[Tab.tabId]
+            }.toList().map { t ->
+                TaskJson(
+                    t[Task.taskName],
+                    tab[Tab.tabName],
+                    id[User.email],
+                    t[Task.description],
+                    t[Task.date],
+                    t[Task.done]
+                )
+            }
+        }
+
+        call.respond(tasks)
+        call.respond(HttpStatusCode.OK)
+
+        println("------------------</ todo/get >-----------------------")
     }
 
     post("/todo/delete"){
@@ -162,6 +165,20 @@ fun getTab(
         Tab.select {
             Tab.userId eq id[User.userId]
             Tab.tabName eq tabInput.tabName
+        }.firstOrNull()
+    }
+    return tab
+}
+
+fun getTab(
+    id: ResultRow,
+    tabName: String
+): ResultRow? {
+    val tab = transaction {
+        addLogger(StdOutSqlLogger)
+        Tab.select {
+            Tab.userId eq id[User.userId]
+            Tab.tabName eq tabName
         }.firstOrNull()
     }
     return tab

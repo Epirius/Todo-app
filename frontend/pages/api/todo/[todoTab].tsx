@@ -9,16 +9,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { todoTab } = req.query;
     if (session) {
       const config: AxiosRequestConfig = {
-        method: "POST",
+        method: "GET",
         headers: { Authorization: `Bearer ${session.user.backendToken}` },
       };
       return await axios
-          .post(
-            "http://0.0.0.0:8080/todo/get",
-            {
-                tabName: todoTab,
-                email: session.user.email,
-            },
+          .get(
+            "http://0.0.0.0:8080/todo/" + todoTab,
             config
           )
           .then((response) => (res.status(response.status).json(response.data)))

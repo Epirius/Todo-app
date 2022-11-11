@@ -11,10 +11,13 @@ import {
 import { TabPage } from "./TabPage";
 import { CreateForm } from "../CreateForm";
 
+interface tabObj{
+  tabName: String,
+  email: String
+}
+
 export const TabSelector = () => {
-  const [tabs, setTabs] = useState([
-    { tabName: "Today", email: "" },
-  ]);
+  const [tabs, setTabs] = useState(new Array<tabObj>());
   useEffect(() => {
     pullTabs();
   }, []);
@@ -26,15 +29,8 @@ export const TabSelector = () => {
         return res.json()
       })
       .then((res) => setTabs(res))
-      .then(res => console.log(tabs))
       .catch((err) => {
         console.log("could not fetch the tabs from backend. error: " + err);
-        setTabs([
-          {
-            tabName: "Error",
-            email: "Could not fetch the tabs from the backend",
-          },
-        ]);
       });
   };
 
