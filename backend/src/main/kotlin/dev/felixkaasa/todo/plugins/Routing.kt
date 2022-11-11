@@ -56,6 +56,16 @@ fun getUser(tab: TabJson): ResultRow? {
     return id
 }
 
+fun getUser(email: String): ResultRow? {
+    val id = transaction {
+        addLogger(StdOutSqlLogger)
+        User.select {
+            User.email eq email
+        }.firstOrNull()
+    }
+    return id
+}
+
 fun getUser(user: UserJson): ResultRow? {
     val id = transaction {
         addLogger(StdOutSqlLogger)

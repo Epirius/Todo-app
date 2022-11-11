@@ -10,10 +10,6 @@ const Header = () => {
   
   // TEST
   const { data: session } = useSession();
-  const test = () => {
-    console.log("test")
-    console.log(session)
-  }
   // TEST
 
   return (
@@ -21,7 +17,6 @@ const Header = () => {
       <Flex direction="row" alignItems="center" px="23px" w="100vw" h="80px">
         <Logo />
         <Spacer />
-        <Button onClick={test}>Test</Button>
         <NavBar/>
         <LoginBtn />
       </Flex>

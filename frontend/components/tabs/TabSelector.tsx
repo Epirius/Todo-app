@@ -10,20 +10,23 @@ import {
 } from "@chakra-ui/react";
 import { TabPage } from "./TabPage";
 import { CreateForm } from "../CreateForm";
-import { v4 } from 'uuid';
 
 export const TabSelector = () => {
   const [tabs, setTabs] = useState([
-    { tabName: "Today", email: "techtvids@gmail.com" },
+    { tabName: "Today", email: "" },
   ]);
   useEffect(() => {
     pullTabs();
   }, []);
 
-  const pullTabs = async () => {
+  const pullTabs = () => {
     fetch("/api/tabs/getTabs")
-      .then((res) => res.json())
+      .then(res => {
+        if(res.status !== 200) throw Error("response not 200");
+        return res.json()
+      })
       .then((res) => setTabs(res))
+      .then(res => console.log(tabs))
       .catch((err) => {
         console.log("could not fetch the tabs from backend. error: " + err);
         setTabs([
@@ -67,7 +70,7 @@ export const TabSelector = () => {
         }}
       >
         {tabs.map((tab, index: number) => (
-          <Tab key={v4()}>{tab.tabName}</Tab>
+          <Tab key={index}>{tab.tabName}</Tab>
         ))}
 
         <Spacer />
@@ -76,7 +79,7 @@ export const TabSelector = () => {
 
       <TabPanels>
         {tabs.map((tab, index: number) => (
-          <TabPanel p={4} key={v4()}>
+          <TabPanel p={4} key={index}>
             <TabPage tabName={tab.tabName} pullTabsFromServer={pullTabs} />
           </TabPanel>
         ))}

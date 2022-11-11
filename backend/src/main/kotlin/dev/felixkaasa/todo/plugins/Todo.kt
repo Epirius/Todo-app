@@ -150,7 +150,6 @@ fun getTab(
             Tab.tabName eq tabInput.tabName
         }.firstOrNull()
     }
-    println("[/todo/delete]  ----------  tab: $tab")
     return tab
 }
 
@@ -165,7 +164,6 @@ fun getTab(
             Tab.tabName eq tabInput.tabName
         }.firstOrNull()
     }
-    println("[/todo/delete]  ----------  tab: $tab")
     return tab
 }
 
