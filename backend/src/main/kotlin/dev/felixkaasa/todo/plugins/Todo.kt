@@ -60,9 +60,9 @@ fun Route.todo() {
         }
     }
 
-    get("/todo/{tabName}") {
+    get("/todo/{tab}") {
         println("------------------< todo/get >-----------------------")
-        val tabName = call.parameters["tabName"]
+        val tabName = call.parameters["tab"]
         if (tabName == null){
             call.respond(HttpStatusCode.BadRequest, "[get todo] tab name was null")
             return@get
@@ -106,59 +106,42 @@ fun Route.todo() {
         println("------------------</ todo/get >-----------------------")
     }
 
-    post("/todo/delete"){
-        try{
-            println("[/todo/delete] ")
-            val delTaskInput = call.receive<DelTaskJson>()
-            println("[/todo/delete] received json")
-            val id = getUser(delTaskInput)
-            println("[/todo/delete] attempted to get user id")
-            if (id == null) {
-                println("[/todo/delete] id was null")
-                call.respond(HttpStatusCode.InternalServerError, "[/todo/delete] Could not find the user")
-                return@post
-            }
-            println("[/todo/delete] attempting to get the tab")
-            val tab = getTab(id, delTaskInput)
-            if (tab == null) {
-                println("[/todo/delete] could not find the tab with given name")
-                call.respond(HttpStatusCode.BadRequest, "[/todo/delete] could not find the tab with the given name")
-                return@post
-            }
-            println("[/todo/delete] tab is not null")
-            transaction {
-                addLogger(StdOutSqlLogger)
-                Task.deleteWhere {
-                    Task.tabId eq tab[Tab.tabId]
-                    Task.taskName eq delTaskInput.taskName
-                }
-            }
-            println("[/todo/delete] deleted task")
-            call.respond(HttpStatusCode.OK)
-        } catch (e: Exception) {
-            println("[/todo/delete] error: $e")
-            call.respond(HttpStatusCode.InternalServerError)
+    delete("/todo/{tab}/{task}"){
+        println("------------------< todo/delete >-----------------------")
+        val tabName = call.parameters["tab"]
+        val taskName = call.parameters["task"]
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (tabName == null || taskName == null || email == null){
+            call.respond(HttpStatusCode.BadRequest, "[delete todo] some input was null")
+            return@delete
         }
+
+        val id = getUser(email)
+        if (id == null) {
+            call.respond(HttpStatusCode.InternalServerError, "[/todo/delete] Could not find the user")
+            return@delete
+        }
+
+        val tab = getTab(id, tabName)
+        if (tab == null) {
+            call.respond(HttpStatusCode.BadRequest, "[/todo/delete] could not find the tab with the given name")
+            return@delete
+        }
+        transaction {
+            addLogger(StdOutSqlLogger)
+            Task.deleteWhere {
+                tabId eq tab[Tab.tabId]
+                Task.taskName eq taskName
+            }
+        }
+        call.respond(HttpStatusCode.OK)
+        println("------------------</ todo/delete >-----------------------")
     }
 }
 
 fun getTab(
     id: ResultRow,
     tabInput: TabJson
-): ResultRow? {
-    val tab = transaction {
-        addLogger(StdOutSqlLogger)
-        Tab.select {
-            Tab.userId eq id[User.userId]
-            Tab.tabName eq tabInput.tabName
-        }.firstOrNull()
-    }
-    return tab
-}
-
-fun getTab(
-    id: ResultRow,
-    tabInput: DelTaskJson
 ): ResultRow? {
     val tab = transaction {
         addLogger(StdOutSqlLogger)
