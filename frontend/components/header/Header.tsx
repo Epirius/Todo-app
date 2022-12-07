@@ -5,6 +5,7 @@ import { LoginBtn } from "./Login-btn";
 import { Logo } from "./Logo";
 import { NavBar } from "./NavBar";
 import { NavLink } from "./NavLink";
+import { TestButton } from "./TestButton";
 
 const Header = () => {
   
@@ -17,6 +18,7 @@ const Header = () => {
       <Flex direction="row" alignItems="center" px="23px" w="100vw" h="80px">
         <Logo />
         <Spacer />
+        <TestButton />
         <NavBar/>
         <LoginBtn />
       </Flex>

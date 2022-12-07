@@ -11,6 +11,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       [tabName, taskName] = todoDel.split("_");
       if (taskName === null || tabName === null) {
         res.status(400).json({ messagee: "some of the input was null" });
+        return;
       }
     } else {
       res.status(400).json({message: "the input could not be parsed "});

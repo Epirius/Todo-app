@@ -1,6 +1,7 @@
 package dev.felixkaasa.todo.plugins
 
 import dev.felixkaasa.todo.schema.*
+import dev.felixkaasa.todo.schema.Task.done
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -121,6 +122,92 @@ fun Route.todo() {
         }
         call.respond(HttpStatusCode.OK)
         println("------------------</ todo/delete >-----------------------")
+    }
+
+    post("/todo/checkbox/{tab}/{task}/{bool}"){
+        println("------------------< todo/checkbox >-----------------------")
+        val tabName = call.parameters["tab"]
+        val taskName = call.parameters["task"]
+        val checkboxValue = call.parameters["bool"]
+
+        if (tabName == null || taskName == null || checkboxValue == null){
+            call.respond(HttpStatusCode.BadRequest, "[todo/checkbox] some of the url input variables was null")
+            return@post
+        }
+
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
+            return@post
+        }
+
+        val id = getUser(email)
+        if (id == null) {
+            call.respond(HttpStatusCode.InternalServerError, "[todo] Could not find the user")
+            return@post
+        }
+
+        val tab = getTab(id, tabName)
+        if (tab == null){
+            call.respond(HttpStatusCode.InternalServerError, "[todo] Could not find the tab")
+            return@post
+        }
+
+        transaction {
+            addLogger(StdOutSqlLogger)
+            Task.update ({
+                Task.tabId eq tab[Tab.tabId] and
+                (Task.taskName eq taskName)
+            }){
+                it[done] = checkboxValue.contains("true")
+            }
+        }
+        call.respond(HttpStatusCode.OK,)
+        println("------------------</ todo/checkbox >-----------------------")
+    }
+
+    get("/todo/checkbox/{tab}/{task}"){
+        println("------------------< get/todo/checkbox >-----------------------")
+        val tabName = call.parameters["tab"]
+        val taskName = call.parameters["task"]
+
+        if (tabName == null || taskName == null){
+            call.respond(HttpStatusCode.BadRequest, "[todo/checkbox] some of the url input variables was null")
+            return@get
+        }
+
+        val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
+        if (email == null){
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
+            return@get
+        }
+
+        val id = getUser(email)
+        if (id == null) {
+            call.respond(HttpStatusCode.InternalServerError, "[todo] Could not find the user")
+            return@get
+        }
+
+        val tab = getTab(id, tabName)
+        if (tab == null){
+            call.respond(HttpStatusCode.InternalServerError, "[todo] Could not find the tab")
+            return@get
+        }
+
+        val checkboxValue = transaction {
+            addLogger(StdOutSqlLogger)
+            Task.select {
+                Task.tabId eq tab[Tab.tabId] and
+                        (Task.taskName eq taskName)
+            }.firstOrNull()?.get(done)
+        }
+
+        if (checkboxValue === null){
+            call.respond(HttpStatusCode.InternalServerError, "the result of the checkbox value was null")
+            return@get
+        }
+        call.respond(HttpStatusCode.OK, checkboxValue)
+        println("------------------</ get/todo/checkbox >-----------------------")
     }
 }
 

@@ -9,7 +9,7 @@ import {
   Checkbox,
   IconButton,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 
 interface todoProps {
   props: {
@@ -25,12 +25,27 @@ interface todoProps {
 
 export const Todo = ({ props, pullTask }: todoProps) => {
   let { taskName, tabName, email, description, date, done } = props;
+  const [check, setCheck] = useState(done);
 
   const deleteTask = async () => {
     fetch("/api/todo/delete/" + tabName + "_" + taskName).then(
       pullTask()
     );
   };
+
+  const checkBoxUpdate = () => {
+    console.log("click")
+    
+
+    fetch("/api/todo/checkbox/" + tabName + "/" + taskName + "/" + !check)
+    .then(res => {
+      if (res.status === 200){
+        fetch("/api/todo/checkbox/hello/test/getStatus")
+        .then(res1 => res1.json())
+        .then(res2 => setCheck(res2))
+      }
+    })
+  }
 
   return (
     <Stack spacing="24px" padding="5px 20px">
@@ -44,7 +59,7 @@ export const Todo = ({ props, pullTask }: todoProps) => {
           <h2>{taskName}:</h2>
           <Spacer />
           <Text>{date}</Text>
-          <Checkbox isChecked={done}>Done</Checkbox>
+          <Checkbox isChecked={check} onChange={() => checkBoxUpdate()}>Done</Checkbox>
           <IconButton
             onClick={() => deleteTask()}
             backgroundColor="red.400"
