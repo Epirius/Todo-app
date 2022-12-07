@@ -5,7 +5,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
@@ -19,7 +18,7 @@ fun Route.tab(){
 
         val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
         if (email == null){
-            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
             return@get
         }
 
@@ -50,13 +49,13 @@ fun Route.tab(){
         println("------------------< tab/create >-----------------------")
         val tab = call.parameters["tab"]
         if (tab == null){
-            call.respond(HttpStatusCode.BadRequest, "[tab create] tabname was null")
+            call.respond(HttpStatusCode.BadRequest, "[tab create] tab name was null")
             return@post
         }
 
         val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
         if (email == null){
-            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
             return@post
         }
 
@@ -81,13 +80,13 @@ fun Route.tab(){
         println("------------------< tab/delete >-----------------------")
         val tabName = call.parameters["tab"]
         if (tabName == null){
-            call.respond(HttpStatusCode.BadRequest, "[tab create] tabname was null")
+            call.respond(HttpStatusCode.BadRequest, "[tab create] tab name was null")
             return@delete
         }
 
         val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
         if (email == null){
-            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
             return@delete
         }
 

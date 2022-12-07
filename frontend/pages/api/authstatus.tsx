@@ -6,9 +6,11 @@ import { getSession } from "next-auth/react";
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const session = await getSession({ req });
   if (session) {
-    const config: AxiosRequestConfig = { 
-        method: 'GET',
-        headers: { Authorization: `Bearer ${session.user.backendToken}` } };
+    const config: AxiosRequestConfig = {
+      method: "GET",
+      headers: { Authorization: `Bearer ${session.user.backendToken}` },
+    };
+
     return await axios
       .get("http://0.0.0.0:8080/authstatus", config)
       .then((response) => {

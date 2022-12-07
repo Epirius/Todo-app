@@ -36,7 +36,13 @@ export const TabSelector = () => {
 
   const createTabCallback = async (slug: String) => {
     fetch("/api/tabs/create/" + slug)
-    .then(res => pullTabs());
+    .then(res => {
+      if (res.status === 200){
+        pullTabs()
+      } else {
+        throw Error("response not 200");
+      }
+    });
   }
 
   const data = [

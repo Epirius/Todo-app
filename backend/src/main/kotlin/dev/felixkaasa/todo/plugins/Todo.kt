@@ -18,7 +18,7 @@ fun Route.todo() {
         val todo = call.receive<TaskJson>()
         val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
         if (email == null){
-            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
             return@post
         }
         val id = getUser(email)
@@ -57,7 +57,7 @@ fun Route.todo() {
 
         val email: String? = call.principal<JWTPrincipal>()?.payload?.getClaim("email")?.asString()?.lowercase()
         if (email == null){
-            call.respond(HttpStatusCode.BadRequest, "could not find the eamil inside the jwt token")
+            call.respond(HttpStatusCode.BadRequest, "could not find the email inside the jwt token")
             return@get
         }
 
@@ -124,33 +124,5 @@ fun Route.todo() {
     }
 }
 
-fun getTab(
-    id: ResultRow,
-    tabInput: TabJson
-): ResultRow? {
-    val tab = transaction {
-        addLogger(StdOutSqlLogger)
-        Tab.select {
-            Tab.userId eq id[User.userId]
-            Tab.tabName eq tabInput.tabName
-        }.firstOrNull()
-    }
-    return tab
-}
 
-fun getTab(
-    id: ResultRow,
-    tabName: String
-): ResultRow? {
-    val tab = transaction {
-        addLogger(StdOutSqlLogger)
-        Tab.select {
-            Tab.userId eq id[User.userId]
-            Tab.tabName eq tabName
-        }.firstOrNull()
-    }
-    return tab
-}
-
-//TODO make sure tabs dont have the same name
 
